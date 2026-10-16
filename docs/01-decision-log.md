@@ -36,6 +36,34 @@ as literally stated.
   Producing a numeric market-sizing estimate without this would violate the "never invent facts" and
   "distinguish verified facts from estimates" rules. Logged as Tier 1 open question #2 instead.
 
+## 2026-10-16 — Founder redirect: drop market-sizing research, focus on practical launch risk
+
+**Decision D4:** Stop pursuing TRNC business-count/size-distribution data and a competitor census as
+blocking research. Reframe the deliverable the founder actually wants as a practical, launch-oriented risk
+assessment, led by privacy/data compliance, not a market-sizing study.
+
+- Rationale, in the founder's own terms: TRNC is not a properly digitized place — there is no database or
+  registry that would give a defensible count of businesses, or of how many run Zoho vs. Microsoft vs.
+  nothing. Chasing that number further would produce a confident-looking but fabricated-feeling figure,
+  which violates the "never invent facts" rule worse than just admitting the data doesn't exist. The
+  founder's actual go-to-market is relationship-based/word-of-mouth (direct pitch to his own workplace and
+  outward from there), not a data-driven segmentation campaign — so a market-sizing deliverable would not
+  change what he does next.
+- This also reframes demand validation: the founder is not asking "should I build this" pending market
+  research — he has decided he would build this now. What he wants from this engagement is **the angles
+  he'd miss building it alone**: privacy/legal/compliance first, and other practical launch risks (trust,
+  pricing durability, operational, technical-debt-now-vs-later) second. Competitive feature-comparison and
+  market-sizing are explicitly deprioritized, not because they're wrong, but because he's told us they're
+  not what he needs from this process.
+- This does **not** cancel Gate 4 (no production code without explicit authorization) or the legal-register
+  caveats in `05-legal-register.md` — those stand. It changes what research happens between now and a build
+  decision, not the no-code-before-approval rule itself.
+- Rejected alternative: continuing to push on TRNC business counts / Zoho-vs-Teams prevalence research.
+  Rejected per the founder's explicit statement that no such data source exists to find.
+- Carried forward as an acknowledged, permanent limitation rather than a to-do: `07-market-analysis-northern-cyprus.md`
+  and `06-competitor-analysis.md` are frozen at their first-pass state and will not be chased further unless
+  the founder asks again.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)

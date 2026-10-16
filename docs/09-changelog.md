@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-16 — v0.2 (founder redirect)
+
+- Founder redirected the engagement: no TRNC business registry/database exists to size the market or to
+  census which businesses run Zoho/Microsoft, so that research is not pursued further (Decision D4 in
+  `01-decision-log.md`). `06-competitor-analysis.md` and `07-market-analysis-northern-cyprus.md` are frozen
+  as background, not blocking anything further.
+- New primary deliverable: `10-practical-launch-risks.md` — practical problems to expect at launch, led by
+  privacy/data-compliance (the founder's explicit priority), covering employee-monitoring/notice
+  obligations, the one remaining legal-verification step (TRNC Law 89/2007 via real counsel), trust/adoption
+  failure modes, commercial-durability risk, and cheap-now/expensive-later technical decisions.
+- No change to the no-code-before-approval rule (Gate 4) — this redirect changes what research happens, not
+  whether code gets written without authorization.
+
 ## 2026-10-16 — v0.1 (Gate 0 first output)
 
 - Initial creation of the full persistent documentation structure (`README.md` index plus 9 documents).

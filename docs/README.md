@@ -10,12 +10,19 @@ defined. No architecture has been chosen. No code exists or should exist yet.**
 
 ## Reading order for a new session
 
-1. `01-decision-log.md` — decisions made so far and their rationale (currently: none finalized)
-2. `04-open-questions.md` — ranked unresolved questions, read this before doing new research so you don't
+1. `01-decision-log.md` — decisions made so far and their rationale, **especially Decision D4**: the founder
+   redirected this engagement away from market-sizing/competitor-census research (no usable business
+   registry exists for TRNC) and toward a practical pre-launch risk assessment, privacy/data-compliance
+   first.
+2. `10-practical-launch-risks.md` — the current primary deliverable: practical problems to expect at launch,
+   not a market study.
+3. `04-open-questions.md` — ranked unresolved questions, read this before doing new research so you don't
    duplicate work
-3. `02-assumptions.md` — what we are provisionally treating as true, and how confident we are
-4. `00-project-charter.md` — mandate, scope, constraints
-5. The rest, as needed for the topic at hand
+4. `02-assumptions.md` — what we are provisionally treating as true, and how confident we are
+5. `00-project-charter.md` — mandate, scope, constraints
+6. The rest, as needed for the topic at hand. `06-competitor-analysis.md` and
+   `07-market-analysis-northern-cyprus.md` are frozen first-pass documents, kept as background, not being
+   pursued further per Decision D4.
 
 ## Document index
 
@@ -31,6 +38,7 @@ defined. No architecture has been chosen. No code exists or should exist yet.**
 | `07-market-analysis-northern-cyprus.md` | TRNC market sizing evidence and its limits | Started — first pass |
 | `08-risk-register.md` | Prioritized risks across demand, legal, technical, commercial | Started — first pass |
 | `09-changelog.md` | Chronological log of what changed in these docs and why | Started |
+| `10-practical-launch-risks.md` | Practical problems to expect at launch, privacy/compliance first — **current primary deliverable** | Done for this pass |
 | PRD, UX spec, architecture, DB design, integration spec, data governance, threat model, test strategy, commercial model, GTM plan, ops runbook, roadmap | Product/engineering deliverables | **Not started — blocked on research and approval gate per Master Prompt. Do not start.** |
 
 ## Rules this project follows (from the Master Prompt, restated for operational use)
