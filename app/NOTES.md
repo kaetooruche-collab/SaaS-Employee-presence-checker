@@ -58,7 +58,13 @@ backdated status to Unconfirmed on its own. See the build session's test output 
 
 ## Deploying to Vercel
 
-**Status: deployed and live, but not usable yet — it needs a database.** Project `presence-app` under the
+**Status: deployed, live, and seeded.** Database is connected and migrated, and the first company
+("StatusLit"), department ("General"), and admin account (the founder's own phone number) exist. The
+one-time bootstrap endpoint used to set this up has been deleted — see Decision D11 in
+`docs/01-decision-log.md`. What's left: the cron-job.org setup below (job 2), and a real WhatsApp vendor
+whenever console-logged OTP codes aren't enough anymore.
+
+Earlier status, kept for history: Project `presence-app` under the
 `kayz3` team is linked to this repo's `claude/upbeat-maxwell-4h1bat` branch for auto-deploy on push. The
 first production deployment succeeded (build `READY`) at `https://presence-app-kayz3.vercel.app`, and the
 project's Vercel Authentication setting was changed so the production URL is publicly reachable (not gated

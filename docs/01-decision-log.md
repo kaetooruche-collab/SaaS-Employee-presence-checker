@@ -235,6 +235,32 @@ route touches the database through `attachEmployee`. This confirms the deploymen
 (build, routing, the Express app) works; the only blocker is the already-documented missing database and
 WhatsApp credentials, both still the founder's to provision.
 
+## 2026-10-16 — Job 1 complete: database live, named, seeded
+
+**Decision D11:** Researched and chose **StatusLit** as the product/company name before using it as real seed
+data — not from memory, but checked directly: zero hits in WIPO's Global Brand Database (global trademark
+search), `.com` available and unregistered (pristine, no creation date on record), and no existing
+product/company found anywhere using it. A close call, **Staffglow** (also clean on domain + trademark),
+was rejected after a plain web search surfaced **StaffFlow** — a real UK-registered workforce-management
+app (Companies House, G2 reviews) phonetically close enough to risk confusion, which an exact-string
+trademark search alone would never have caught. Flagged to the founder that this is a solid automated check,
+not a substitute for an attorney or local business-registry search before spending money on branding.
+
+Ran the fixed-up bootstrap endpoint against production: applied the full schema (33 statements) and created
+the first company ("StatusLit"), department ("General"), and admin account (the founder's own
++90 533 822 5854 number). Caught and fixed one real bug live (`regclass` needs an explicit `::text` cast for
+Prisma's `$queryRawUnsafe` to deserialize it) — logged here rather than silently patched, since it's exactly
+the kind of thing worth a trail.
+
+Deleted the bootstrap endpoint immediately after the one successful run, as promised in Decision D9/D10's
+follow-up, and overwrote `BOOTSTRAP_SECRET`'s value as defense in depth even though deleting the route is
+the actual protection (no code path reads it anymore). Verified both directly: `/login` still returns 200,
+`/api/admin/bootstrap` now returns 404.
+
+**Job 1 (database) is done.** What remains before this is a real, usable product: the cron-job.org setup for
+the three time-sensitive scheduled jobs (job 2, in progress), and the founder's own WhatsApp Business setup
+whenever real OTP delivery is wanted instead of console-logged codes.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)
