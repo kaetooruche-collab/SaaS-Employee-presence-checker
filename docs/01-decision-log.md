@@ -204,6 +204,26 @@ assuming the classic serverless pattern still applied:
   through on their behalf. Same reasoning for actually creating Meta WhatsApp Business credentials — that
   account is the founder's, not something this session can create.
 
+## 2026-10-16 — Cron frequency: external pinger instead of Vercel Pro
+
+**Decision D10:** The first deployment attempt failed outright: Vercel rejected it with
+`cron_jobs_limits_reached` — the team's Hobby plan only allows daily-or-less-frequent Cron Jobs, and three of
+the four jobs needed 5-minute cadence. This is the real, current limit (confirmed by Vercel's own API error,
+not assumed in advance, consistent with not asserting a specific number back in Decision D9 before it was
+verified).
+
+Founder chose to stay on Hobby and use a free external cron-ping service (cron-job.org) to hit
+`/api/cron/degrade-stale`, `/api/cron/day-boundary-reset`, and `/api/cron/leave-sync` every 5 minutes with
+the `Authorization: Bearer <CRON_SECRET>` header, rather than upgrade to Pro or loosen the staleness
+thresholds to fit a daily cadence (which would have broken the 2h/8h design from doc 11). Verified
+cron-job.org supports custom headers on its free plan before recommending it (its own FAQ: "our service
+supports arbitrary custom headers"), rather than assuming.
+
+`vercel.json`'s `crons` array now only lists `purge-history` (daily, fits Hobby). The other three endpoints
+still exist and still check `CRON_SECRET` the same way — only the thing calling them changed. Setting up the
+actual cron-job.org account/jobs is the founder's action (an external account this session has no authority
+to create), documented step-by-step in `/app/NOTES.md`.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)
