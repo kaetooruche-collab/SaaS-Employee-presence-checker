@@ -141,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const existing = await db.$queryRawUnsafe<{ to_regclass: string | null }[]>(
-      `SELECT to_regclass('public.companies') as to_regclass`
+      `SELECT to_regclass('public.companies')::text as to_regclass`
     );
     const schemaExists = existing[0]?.to_regclass !== null;
 
