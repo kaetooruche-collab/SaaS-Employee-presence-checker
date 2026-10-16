@@ -83,6 +83,27 @@ default pending confirmation of SMS vs. WhatsApp reachability in TRNC.
 - This decision does not authorize production coding (Gate 4 unchanged) — it is the product-definition
   input Gate 4 will eventually need.
 
+## 2026-10-16 — MVP database schema drafted
+
+**Decision D6:** Translated `11-product-definition-mvp.md` directly into a concrete schema in
+`12-database-schema-mvp.md`: `companies`, `departments`, `employees`, `employee_extra_department_access`,
+`employee_statuses` (current, 1 row/employee), `status_history` (append-only, 30-day purge),
+`leave_entries` (date range only, no reason field), `otp_codes` (hashed, short-lived).
+
+- Postgres-flavored SQL used for concreteness (native enums, UUIDs, row-level-security fit), not a locked
+  technology choice.
+- `company_id` is deliberately denormalized onto every table, even where derivable via joins, so tenant
+  isolation can be enforced by a simple per-table policy rather than depending on every query getting a join
+  right — directly implementing the "isolation by construction, not by convention" point from
+  `10-practical-launch-risks.md` section 4.
+- Staleness thresholds (2h / 8h) and the auth channel are stored as per-company config columns, not
+  hardcoded, since doc 11 already flagged the 8h/2h figures and SMS-vs-WhatsApp choice as defaults to
+  confirm, not fixed constants.
+- Three scheduled jobs (staleness auto-degrade, day-boundary reset, leave sync) and one maintenance job
+  (history purge) are documented as required behavior but intentionally left as implementation, not schema.
+- This is still a planning artifact (schema/ER-level design), not production code — Gate 4 (explicit
+  authorization to start building) has not been granted and is a separate decision.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)

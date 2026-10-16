@@ -39,7 +39,8 @@ defined. No architecture has been chosen. No code exists or should exist yet.**
 | `08-risk-register.md` | Prioritized risks across demand, legal, technical, commercial | Started — first pass |
 | `09-changelog.md` | Chronological log of what changed in these docs and why | Started |
 | `10-practical-launch-risks.md` | Practical problems to expect at launch, privacy/compliance first | Done for this pass |
-| `11-product-definition-mvp.md` | Locked MVP scope: status model, visibility, data minimization, exclusions, acceptance criteria — **current primary deliverable** | Done for this pass |
+| `11-product-definition-mvp.md` | Locked MVP scope: status model, visibility, data minimization, exclusions, acceptance criteria | Done for this pass |
+| `12-database-schema-mvp.md` | Concrete schema (tables, enums, jobs) translating doc 11 — **current primary deliverable, last planning artifact before code** | Done for this pass |
 | PRD, UX spec, architecture, DB design, integration spec, data governance, threat model, test strategy, commercial model, GTM plan, ops runbook, roadmap | Product/engineering deliverables | **Not started — blocked on research and approval gate per Master Prompt. Do not start.** |
 
 ## Rules this project follows (from the Master Prompt, restated for operational use)

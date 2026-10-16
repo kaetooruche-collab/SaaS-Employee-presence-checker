@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-16 — v0.4 (MVP database schema)
+
+- Added `12-database-schema-mvp.md` and Decision D6: concrete Postgres-flavored schema translating doc 11
+  (companies, departments, employees, employee_statuses, status_history, leave_entries, otp_codes,
+  employee_extra_department_access), with `company_id` denormalized everywhere for isolation-by-construction,
+  configurable staleness thresholds, and documented (not yet implemented) scheduled jobs for auto-degrade,
+  day-boundary reset, leave sync, and history purge.
+- This is the last planning artifact before code per the founder's own framing; it does not itself
+  authorize production coding.
+
 ## 2026-10-16 — v0.3 (MVP product definition locked)
 
 - Added `11-product-definition-mvp.md` and Decision D5: locked the six-status model, department-scoped
