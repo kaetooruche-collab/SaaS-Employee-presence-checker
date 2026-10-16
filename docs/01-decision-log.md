@@ -64,6 +64,25 @@ assessment, led by privacy/data compliance, not a market-sizing study.
   and `06-competitor-analysis.md` are frozen at their first-pass state and will not be chased further unless
   the founder asks again.
 
+## 2026-10-16 — MVP product definition locked
+
+**Decision D5:** Locked the minimal product definition in `11-product-definition-mvp.md`: six-status model
+(Present/Away/Remote/Off-site/On leave/Unconfirmed), department-scoped visibility by default with named
+Admin overrides, 30-day rolling status history only (no permanent attendance archive), no integrations/GPS/
+mobile app/localization/multi-level org hierarchy at MVP, and phone-number-plus-OTP auth as a recommended
+default pending confirmation of SMS vs. WhatsApp reachability in TRNC.
+
+- Rationale: per the founder's own framing (section 4 of `10-practical-launch-risks.md`), data model,
+  visibility rules, and retention are cheap to decide now and expensive to retrofit once real customer data
+  exists. This gate stops short of screen-level UX, schema/ER diagrams, and auth vendor choice — those are
+  the next layer, directly buildable from this document, but not decided here.
+- The 30-day rolling history / no-disciplinary-archive choice directly closes the "status data used as
+  termination evidence" risk flagged in the launch-risk doc, by construction rather than by policy alone.
+- Open item carried forward, not blocking: confirm SMS vs. WhatsApp Business API reachability for TRNC
+  numbers before finalizing auth implementation.
+- This decision does not authorize production coding (Gate 4 unchanged) — it is the product-definition
+  input Gate 4 will eventually need.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)

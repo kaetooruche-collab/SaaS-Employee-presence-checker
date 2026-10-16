@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-16 — v0.3 (MVP product definition locked)
+
+- Added `11-product-definition-mvp.md` and Decision D5: locked the six-status model, department-scoped
+  visibility with Admin overrides, 30-day rolling history (no permanent attendance archive), explicit
+  exclusions (no integrations/GPS/mobile app/localization/multi-level hierarchy), acceptance criteria, and a
+  recommended phone+OTP auth default pending SMS/WhatsApp confirmation.
+- This is the product-definition input for a future Gate 4 decision; it does not itself authorize coding.
+
 ## 2026-10-16 — v0.2 (founder redirect)
 
 - Founder redirected the engagement: no TRNC business registry/database exists to size the market or to
