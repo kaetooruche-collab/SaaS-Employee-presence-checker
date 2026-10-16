@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-10-16 — v0.5 (MVP built and verified)
+
+- Built the working MVP in `/app` per Decision D8: Node/TypeScript/Express/Prisma, server-rendered pages,
+  phone+OTP auth (console-stubbed delivery), the full status/roster/admin/leave flows, and the four
+  scheduled jobs from doc 12.
+- Verified end-to-end against a real local Postgres instance: department-scoped visibility, server-side
+  authorization on overrides, staleness auto-degrade, and leave-sync were all exercised live via actual
+  HTTP requests and direct DB inspection, not just read as code and trusted.
+- Added 7 automated tests (6 pure authorization-logic tests, 1 DB-backed integration test for the
+  status-write path); all passing.
+- `/app/NOTES.md` lists what's stubbed (OTP delivery vendor, OTP rate-limiting) and what's genuinely not
+  built yet (RLS-based isolation, employee deactivation UI, visibility-override UI, production deployment).
+
 ## 2026-10-16 — v0.4 (MVP database schema)
 
 - Added `12-database-schema-mvp.md` and Decision D6: concrete Postgres-flavored schema translating doc 11

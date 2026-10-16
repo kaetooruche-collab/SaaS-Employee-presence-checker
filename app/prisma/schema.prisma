@@ -1,0 +1,179 @@
+// Prisma schema — direct translation of /docs/12-database-schema-mvp.md.
+// Do not add fields here without updating that doc first (see docs/01-decision-log.md Decision D6).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  employee
+  manager
+  admin
+}
+
+enum Status {
+  present
+  away
+  remote
+  off_site
+  on_leave
+  unconfirmed
+}
+
+enum StatusSource {
+  self
+  manager_override
+  admin_override
+  system_auto_degrade
+  leave_sync
+}
+
+enum AuthChannel {
+  sms
+  whatsapp
+}
+
+model Company {
+  id                   String      @id @default(uuid()) @db.Uuid
+  name                 String
+  timezone             String
+  dayBoundaryTime      String      @default("00:00") @map("day_boundary_time") // stored HH:MM, interpreted in `timezone`
+  presenceStaleMinutes Int         @default(120) @map("presence_stale_minutes")
+  remoteStaleMinutes   Int         @default(480) @map("remote_stale_minutes")
+  authChannel          AuthChannel @default(sms) @map("auth_channel")
+  createdAt            DateTime    @default(now()) @map("created_at")
+
+  departments Department[]
+  employees   Employee[]
+
+  @@map("companies")
+}
+
+model Department {
+  id        String   @id @default(uuid()) @db.Uuid
+  companyId String   @map("company_id") @db.Uuid
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  company     Company                         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  employees   Employee[]
+  extraAccess EmployeeExtraDepartmentAccess[]
+
+  @@unique([companyId, name])
+  @@map("departments")
+}
+
+model Employee {
+  id                 String    @id @default(uuid()) @db.Uuid
+  companyId          String    @map("company_id") @db.Uuid
+  departmentId       String    @map("department_id") @db.Uuid
+  name               String
+  phoneNumber        String    @map("phone_number")
+  role               Role      @default(employee)
+  seesAllDepartments Boolean   @default(false) @map("sees_all_departments")
+  deactivatedAt      DateTime? @map("deactivated_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  company    Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id])
+
+  currentStatus EmployeeStatus?
+
+  // Reverse relations for actions this employee performed on others' records.
+  statusHistorySetByMe         StatusHistory[]                 @relation("StatusHistorySetBy")
+  statusesSetByMe              EmployeeStatus[]                @relation("EmployeeStatusSetBy")
+  leaveEntriesOwn              LeaveEntry[]                    @relation("LeaveEntryOwner")
+  leaveEntriesApprovedByMe     LeaveEntry[]                    @relation("LeaveEntryApprover")
+  extraDepartmentAccess        EmployeeExtraDepartmentAccess[] @relation("ExtraAccessGrantee")
+  extraDepartmentAccessGranted EmployeeExtraDepartmentAccess[] @relation("ExtraAccessGrantor")
+  otpCodes                     OtpCode[]
+  StatusHistory                StatusHistory[]
+
+  @@unique([companyId, phoneNumber])
+  @@index([departmentId])
+  @@map("employees")
+}
+
+model EmployeeExtraDepartmentAccess {
+  employeeId   String   @map("employee_id") @db.Uuid
+  departmentId String   @map("department_id") @db.Uuid
+  grantedBy    String   @map("granted_by") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  employee   Employee   @relation("ExtraAccessGrantee", fields: [employeeId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  grantor    Employee   @relation("ExtraAccessGrantor", fields: [grantedBy], references: [id])
+
+  @@id([employeeId, departmentId])
+  @@map("employee_extra_department_access")
+}
+
+model EmployeeStatus {
+  employeeId      String       @id @map("employee_id") @db.Uuid
+  companyId       String       @map("company_id") @db.Uuid
+  status          Status       @default(unconfirmed)
+  note            String?      @db.VarChar(40)
+  setAt           DateTime     @default(now()) @map("set_at")
+  confirmedAt     DateTime     @default(now()) @map("confirmed_at")
+  source          StatusSource @default(system_auto_degrade)
+  setByEmployeeId String?      @map("set_by_employee_id") @db.Uuid
+
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  setByEmployee Employee? @relation("EmployeeStatusSetBy", fields: [setByEmployeeId], references: [id])
+
+  @@map("employee_statuses")
+}
+
+model StatusHistory {
+  id              String       @id @default(uuid()) @db.Uuid
+  employeeId      String       @map("employee_id") @db.Uuid
+  companyId       String       @map("company_id") @db.Uuid
+  status          Status
+  note            String?      @db.VarChar(40)
+  source          StatusSource
+  setByEmployeeId String?      @map("set_by_employee_id") @db.Uuid
+  setAt           DateTime     @map("set_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  setByEmployee Employee? @relation("StatusHistorySetBy", fields: [setByEmployeeId], references: [id])
+
+  @@index([employeeId, createdAt])
+  @@index([companyId, createdAt])
+  @@map("status_history")
+}
+
+model LeaveEntry {
+  id                   String   @id @default(uuid()) @db.Uuid
+  employeeId           String   @map("employee_id") @db.Uuid
+  companyId            String   @map("company_id") @db.Uuid
+  startDate            DateTime @map("start_date") @db.Date
+  endDate              DateTime @map("end_date") @db.Date
+  approvedByEmployeeId String   @map("approved_by_employee_id") @db.Uuid
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  employee   Employee @relation("LeaveEntryOwner", fields: [employeeId], references: [id], onDelete: Cascade)
+  approvedBy Employee @relation("LeaveEntryApprover", fields: [approvedByEmployeeId], references: [id])
+
+  @@index([employeeId, startDate, endDate])
+  @@map("leave_entries")
+}
+
+model OtpCode {
+  id         String    @id @default(uuid()) @db.Uuid
+  employeeId String    @map("employee_id") @db.Uuid
+  codeHash   String    @map("code_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@index([employeeId, expiresAt])
+  @@map("otp_codes")
+}

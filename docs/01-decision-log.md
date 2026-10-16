@@ -104,6 +104,61 @@ default pending confirmation of SMS vs. WhatsApp reachability in TRNC.
 - This is still a planning artifact (schema/ER-level design), not production code — Gate 4 (explicit
   authorization to start building) has not been granted and is a separate decision.
 
+## 2026-10-16 — Gate 4: authorization to begin production coding
+
+**Decision D7:** Founder gave explicit authorization ("start") to begin building the MVP described in
+`11-product-definition-mvp.md` and `12-database-schema-mvp.md`. This is the Gate 4 approval the charter
+required before any code was written — the first three commits in this repository were documentation only.
+
+**Stack choices made to start building (not previously decided, decided now so building can proceed):**
+- **Backend:** Node.js + TypeScript + Express. Chosen for a solo founder's maintenance burden over a
+  heavier framework, and because it pairs naturally with Prisma for the schema below.
+- **Database access:** Prisma, schema defined to match `12-database-schema-mvp.md` table-for-table. Postgres
+  16 is available locally in this environment and is used for real migrations/testing, not a mock.
+- **Frontend:** server-rendered HTML (no SPA framework, no build step, no native app) — directly implementing
+  doc 11's "one responsive web page, link-based access, assume low digital fluency" exclusion/requirement.
+- **OTP delivery:** implemented behind a pluggable `OtpSender` interface with a console-logging stub for
+  development. **No real SMS/WhatsApp vendor is wired up** — doc 11 left this as an open item (SMS vs.
+  WhatsApp Business API reachability for TRNC numbers) and that has not been resolved; wiring a real vendor
+  is a pending follow-up, not done in this pass.
+- Scheduled jobs (staleness auto-degrade, day-boundary reset, leave sync, history purge) run as in-process
+  intervals for MVP simplicity — a solo founder does not need a separate worker service yet; revisit if/when
+  reliability requirements change.
+
+## 2026-10-16 — MVP built and verified end-to-end
+
+**Decision D8:** Built the MVP described in `11-product-definition-mvp.md` and `12-database-schema-mvp.md`
+in `/app` (Node + TypeScript + Express + Prisma, server-rendered HTML, no SPA framework). Ran it against a
+real local Postgres instance, not a mock, and verified by direct HTTP/DB inspection rather than assumption:
+
+- OTP login round-trip works (request code → console-stub delivery → verify → session).
+- An employee can set their own status; a backdated status was shown to actually auto-degrade to
+  Unconfirmed via the scheduled job, matching acceptance criterion 3 in doc 11.
+- **Department-scoped visibility was verified live, not assumed:** a Housekeeping employee's roster view
+  genuinely contained no trace of the General department, while an Admin's view contained both — this is
+  acceptance criterion 4, confirmed by inspecting actual rendered output, not by reading the code and
+  trusting it.
+- A direct forged POST request attempting a cross-department status override from a non-manager returned a
+  real 403 from the server-side `canActOnEmployee` check — confirming the authorization rule doesn't rely on
+  the UI hiding the override form.
+- A leave entry covering today was picked up by the scheduled leave-sync job and turned into an "On leave"
+  status with zero action from the employee, matching acceptance criterion 5.
+- The live schema was reviewed directly against doc 11's data-minimization list and matches exactly — no
+  GPS, no leave reason/category field, nothing beyond what was specified.
+- 7 automated tests added (pure authorization-logic tests plus one DB-backed integration test for the
+  status-write path) and passing; see `/app/NOTES.md` for how to run them.
+
+**What is explicitly not done, logged rather than glossed over** (full detail in `/app/NOTES.md`):
+no real SMS/WhatsApp vendor behind the OTP stub (doc 11's open item, still open), no OTP rate-limiting/brute
+force protection, tenant isolation enforced in application code rather than via Postgres row-level security
+(a real pre-launch task, not yet done), in-process (not durable) scheduled jobs, no admin UI yet for
+deactivating employees or granting cross-department visibility overrides (the underlying data model and
+enforcement logic both already support both), and no production deployment setup.
+
+- This decision does not claim the product is ready to sell. It closes Gate 4 for the *build* step the
+  founder authorized, while the pre-launch items above (and the privacy/counsel step in
+  `10-practical-launch-risks.md`) remain open before a real customer's data goes into this system.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)

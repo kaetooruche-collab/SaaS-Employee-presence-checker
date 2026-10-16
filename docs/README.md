@@ -5,8 +5,9 @@ investigation, maintained under the Master Prompt mandate: determine whether thi
 define the exact product to build, investigate failure modes, and produce an evidence-backed implementation
 plan before any production code is written.
 
-**Status as of this version: Stage 0 — Problem framing and first-pass research. No product has been
-defined. No architecture has been chosen. No code exists or should exist yet.**
+**Status as of this version: MVP built and verified end-to-end (Decision D8). Code lives in `/app`. See
+`/app/NOTES.md` for what's real, what's stubbed, and what's genuinely not built yet before any real
+customer's data goes into this system.**
 
 ## Reading order for a new session
 
