@@ -6,8 +6,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Runtime queries go through DATABASE_URL, which should be the pooled
+  // connection string (e.g. Neon's "-pooler" endpoint) once this is behind
+  // Vercel's serverless functions — many short-lived function invocations
+  // opening direct Postgres connections exhausts the connection limit fast.
+  // directUrl is the unpooled connection, used only for `prisma migrate`.
+  // Locally, both can point at the same local Postgres instance.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
 }
 
 enum Role {

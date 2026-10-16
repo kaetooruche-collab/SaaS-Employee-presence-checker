@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/api/index" }
+  ],
+  "crons": [
+    { "path": "/api/cron/degrade-stale", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/day-boundary-reset", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/leave-sync", "schedule": "*/5 * * * *" },
+    { "path": "/api/cron/purge-history", "schedule": "0 3 * * *" }
+  ]
+}

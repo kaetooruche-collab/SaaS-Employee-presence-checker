@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-10-16 — v0.6 (Vercel + WhatsApp)
+
+- Decision D9: restructured for Vercel deployment (`src/app.ts` + `api/index.ts` + `vercel.json` rewrites)
+  and converted the four scheduled jobs into Vercel Cron-triggered endpoints under `api/cron/*`, guarded by
+  a `CRON_SECRET` bearer check. Fixed `resetAtDayBoundary` to use a 5-minute tolerance window instead of an
+  exact-minute match, matching the new cron cadence; added unit tests for the new window math.
+- Implemented a real WhatsApp Cloud API OTP sender (`whatsAppOtpSender`), selectable via `OTP_CHANNEL`;
+  console stub remains the dev default. Real delivery still needs the founder's own Meta Business Manager
+  setup and an approved Authentication-category template — not something buildable from here.
+- Added Prisma `directUrl` for a future pooled Postgres connection (e.g. Neon).
+- `/app/NOTES.md` updated with Vercel deployment steps and what env vars/accounts are still needed.
+
 ## 2026-10-16 — v0.5 (MVP built and verified)
 
 - Built the working MVP in `/app` per Decision D8: Node/TypeScript/Express/Prisma, server-rendered pages,

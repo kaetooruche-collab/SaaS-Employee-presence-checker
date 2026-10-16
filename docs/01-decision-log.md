@@ -159,6 +159,51 @@ enforcement logic both already support both), and no production deployment setup
   founder authorized, while the pre-launch items above (and the privacy/counsel step in
   `10-practical-launch-risks.md`) remain open before a real customer's data goes into this system.
 
+## 2026-10-16 — Hosting and OTP delivery: Vercel + WhatsApp
+
+**Decision D9:** Founder chose Vercel for hosting and WhatsApp for OTP delivery. Verified against current
+Vercel documentation (via Vercel's own MCP docs search, not memory) before restructuring, rather than
+assuming the classic serverless pattern still applied:
+
+- Vercel has first-class support for a plain Express app via a conventional entrypoint — confirmed directly
+  from Vercel's docs (`docs/frameworks/backend/express`), both the `app.listen()` form and the
+  `export default app` form are documented as working.
+- **Scheduled jobs cannot stay as in-process `setInterval` loops once deployed to Vercel** — Vercel Functions
+  are not guaranteed to stay alive between requests, so a timer started inside one invocation isn't a
+  reliable scheduler. Vercel's documented mechanism for recurring work is Cron Jobs hitting an HTTP
+  endpoint. Restructured accordingly:
+  - `src/app.ts` — the Express app alone (no `.listen()`, no job scheduler), shared by both entrypoints.
+  - `src/server.ts` — local-dev-only entry (`app.listen()` + the original in-process scheduler); never
+    deployed to Vercel.
+  - `api/index.ts` — the Vercel entrypoint, `vercel.json` rewrites every non-`/api` request to it.
+  - `api/cron/{degrade-stale,day-boundary-reset,leave-sync,purge-history}.ts` — one HTTP endpoint per
+    scheduled job from `docs/12-database-schema-mvp.md`, each guarded by a `CRON_SECRET` bearer-token check
+    (Vercel's documented pattern: it sends this automatically on scheduled invocations once the env var is
+    set). Three run every 5 minutes, history purge runs daily at 03:00 UTC.
+  - `resetAtDayBoundary` changed from an exact-minute string match to a 5-minute tolerance window
+    (`isWithinBoundaryWindow`, now unit-tested) to match the new 5-minute cron cadence — an exact match
+    would have missed the boundary almost every day.
+- Did **not** assert a specific Vercel Hobby-vs-Pro cron frequency limit, because the documentation pulled
+  in this session didn't give one with confidence and plan limits change — the founder should just check
+  the dashboard when adding the crons rather than trust a number here that could be stale.
+- Added Prisma `directUrl` alongside `url` in the datasource, anticipating a pooled connection string (e.g.
+  Neon's `-pooler` endpoint) for runtime queries once this sits behind many short-lived Vercel function
+  invocations, with the unpooled URL reserved for migrations. Both point at the same local Postgres for now.
+- **WhatsApp OTP delivery implemented against Meta's WhatsApp Cloud API** (`whatsAppOtpSender` in
+  `src/services/otp.ts`), selected via `OTP_CHANNEL=whatsapp`; the console stub remains the dev default.
+  This requires a pre-approved Meta "Authentication" category template — not something this session can
+  create, since it needs the founder's own Meta Business Manager account, phone number registration, and
+  Meta's template review. The code is real and ready; the account/template setup is the founder's.
+- A Vercel team was found already connected to this session (`KAYZ` / `kayz3`) with one unrelated existing
+  project. No Postgres/Neon connector exists yet for that team.
+- **What this session will do directly:** create a new Vercel project linked to this GitHub repo (free,
+  reversible, no billing implication).
+- **What this session will NOT do silently:** provision a Neon/Postgres database or any other marketplace
+  integration. `vercel install neon` (or the dashboard equivalent) involves accepting marketplace terms and
+  a provider's own billing, which is a decision for the founder to make directly, not something to click
+  through on their behalf. Same reasoning for actually creating Meta WhatsApp Business credentials — that
+  account is the founder's, not something this session can create.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)

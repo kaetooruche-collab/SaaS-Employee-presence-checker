@@ -14,6 +14,23 @@ function localTimeHHMM(timezone: string, date: Date): string {
   return new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "2-digit", minute: "2-digit", hour12: false }).format(date);
 }
 
+function minutesSinceMidnight(hhmm: string): number {
+  const [h, m] = hhmm.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// True if `nowHHMM` falls within `windowMinutes` after `boundaryHHMM`,
+// wrapping correctly across midnight. Vercel Cron calls the day-boundary
+// job every 5 minutes (see vercel.json), not every minute, so an exact
+// string match would miss the boundary most of the time — this widens the
+// check to a window instead. Safe to call repeatedly within that window:
+// resetAtDayBoundary only touches rows not already `unconfirmed`, so a
+// second call in the same window is a no-op, not a duplicate reset.
+export function isWithinBoundaryWindow(nowHHMM: string, boundaryHHMM: string, windowMinutes: number): boolean {
+  const diff = (minutesSinceMidnight(nowHHMM) - minutesSinceMidnight(boundaryHHMM) + 1440) % 1440;
+  return diff < windowMinutes;
+}
+
 // Doc 11: "Present/Away degrades after 2h, Remote/Off-site after 8h without
 // reconfirmation." Thresholds are per-company config, not hardcoded.
 export async function degradeStaleStatuses() {
@@ -44,12 +61,12 @@ export async function degradeStaleStatuses() {
 // Doc 11: "At the start of each workday... every non-leave status resets to
 // Unconfirmed." Runs every tick but only acts in the minute that matches
 // the company's configured boundary, so it fires once per company per day.
-export async function resetAtDayBoundary() {
+export async function resetAtDayBoundary(windowMinutes = 5) {
   const companies = await db.company.findMany();
   const now = new Date();
 
   for (const company of companies) {
-    if (localTimeHHMM(company.timezone, now) !== company.dayBoundaryTime) continue;
+    if (!isWithinBoundaryWindow(localTimeHHMM(company.timezone, now), company.dayBoundaryTime, windowMinutes)) continue;
 
     const toReset = await db.employeeStatus.findMany({
       where: { companyId: company.id, status: { notIn: ["on_leave", "unconfirmed"] } },
