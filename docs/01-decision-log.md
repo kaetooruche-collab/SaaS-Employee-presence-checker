@@ -257,9 +257,20 @@ follow-up, and overwrote `BOOTSTRAP_SECRET`'s value as defense in depth even tho
 the actual protection (no code path reads it anymore). Verified both directly: `/login` still returns 200,
 `/api/admin/bootstrap` now returns 404.
 
-**Job 1 (database) is done.** What remains before this is a real, usable product: the cron-job.org setup for
-the three time-sensitive scheduled jobs (job 2, in progress), and the founder's own WhatsApp Business setup
-whenever real OTP delivery is wanted instead of console-logged codes.
+**Job 1 (database) is done.**
+
+**Job 2 (cron-job.org) is also done** — founder set up all three jobs (degrade-stale, day-boundary-reset,
+leave-sync) with the `Authorization: Bearer <CRON_SECRET>` header and a 5-minute schedule, and confirmed
+each one's first live run succeeded (966ms, 1.14s, and a third all reporting "Successful"). Combined with
+the daily `purge-history` job Vercel's own cron already runs, all four scheduled behaviors from
+`docs/12-database-schema-mvp.md` are now actually executing in production, not just coded.
+
+**What this means:** the system described end-to-end in docs 11/12 is now live and self-maintaining —
+statuses will actually go stale and reset on schedule, leave entries will actually sync, without anyone
+needing to trigger anything by hand. What's left before a real customer pitch: WhatsApp OTP delivery (still
+console-logged for now) and the pre-launch items already listed in `app/NOTES.md` (OTP rate-limiting,
+Postgres RLS, employee-deactivation UI) — none of which block a first internal dogfood test at the
+founder's own workplace, which was always the plan.
 
 ## Pending decisions (not yet made, need human input)
 
