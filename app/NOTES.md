@@ -58,21 +58,50 @@ backdated status to Unconfirmed on its own. See the build session's test output 
 
 ## Deploying to Vercel
 
-A Vercel project ("presence-app" under the `kayz3` team, unless renamed) is linked to this repo's
-`claude/upbeat-maxwell-4h1bat` branch for auto-deploy on push. Before the deployed app actually works end to
-end, set these as Vercel project environment variables (dashboard → Settings → Environment Variables):
+**Status: deployed and live, but not usable yet — it needs a database.** Project `presence-app` under the
+`kayz3` team is linked to this repo's `claude/upbeat-maxwell-4h1bat` branch for auto-deploy on push. The
+first production deployment succeeded (build `READY`) at `https://presence-app-kayz3.vercel.app`, and the
+project's Vercel Authentication setting was changed so the production URL is publicly reachable (not gated
+behind a Vercel team login) — on purpose, since the whole point is pitching this to coworkers who won't have
+Vercel accounts. Preview deployments (from other branches/PRs) are still gated, which is fine since those
+are for you, not customers.
 
-- `DATABASE_URL`, `DIRECT_DATABASE_URL` — from whatever Postgres provider you provision (see above).
-- `SESSION_SECRET` — any long random string, different from the local dev placeholder.
-- `CRON_SECRET` — any random string; Vercel sends it automatically as a Bearer token to the `/api/cron/*`
-  endpoints once this is set, which is what authorizes those scheduled calls.
-- `OTP_CHANNEL`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE_NAME` — once
-  your Meta WhatsApp setup is ready; otherwise leave `OTP_CHANNEL` unset/`console` and OTP codes will only
-  reach the Vercel function logs, not real phones.
+Hitting the live URL right now returns a 500 (`FUNCTION_INVOCATION_FAILED`) — confirmed via Vercel's own
+runtime-error tooling that this is exactly the missing-database issue below, not a deploy or routing
+problem. `SESSION_SECRET`, `CRON_SECRET`, and `OTP_CHANNEL=console` are already set as project env vars (generated
+fresh, not placeholders). What's still needed before this is a real, usable deployment:
 
-After that, run `npm run seed` once against the production database (via `vercel env pull` locally, or
-Vercel's own CLI/dashboard shell) to create the first company, department, and admin — there is no
-self-signup by design.
+1. **A real Postgres database.** Not provisioned — adding one (`vercel install neon` from your own machine,
+   or the Storage tab in the Vercel dashboard) means accepting a provider's own terms/billing, which is
+   yours to decide. Once you have it, set `DATABASE_URL` and `DIRECT_DATABASE_URL` as project env vars
+   (dashboard → Settings → Environment Variables) and run `npm run prisma:deploy` against it (e.g. via
+   `vercel env pull` locally first).
+2. **WhatsApp, if you want real OTP delivery instead of the console stub.** Set `OTP_CHANNEL=whatsapp` plus
+   `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_OTP_TEMPLATE_NAME` once your Meta Business
+   Manager setup and approved Authentication template are ready (see above — this needs your own Meta
+   account, not something set up from here). Until then, OTP codes land only in Vercel's function logs.
+3. **The external cron pinger** (cron-job.org or similar) for the three time-sensitive jobs — see below.
+4. Run `npm run seed` once against the production database to create the first company, department, and
+   admin — there is no self-signup by design.
+
+## Setting up the external cron pinger (cron-job.org)
+
+Three endpoints need to be hit every 5 minutes for the staleness/day-boundary/leave-sync behavior in doc 11
+to actually work (Vercel's own Cron Jobs only allow daily on the Hobby plan — see Decision D10 in
+`docs/01-decision-log.md`). `/api/cron/purge-history` is already scheduled through Vercel itself (daily, no
+action needed). For the other three, create a free account at cron-job.org (its own FAQ confirms custom
+headers are supported on the free plan) and add one job per endpoint:
+
+| URL | Schedule | Header |
+|---|---|---|
+| `https://presence-app-kayz3.vercel.app/api/cron/degrade-stale` | every 5 minutes | `Authorization: Bearer <CRON_SECRET value>` |
+| `https://presence-app-kayz3.vercel.app/api/cron/day-boundary-reset` | every 5 minutes | same |
+| `https://presence-app-kayz3.vercel.app/api/cron/leave-sync` | every 5 minutes | same |
+
+Get the actual `CRON_SECRET` value from the Vercel dashboard (Settings → Environment Variables — it was
+generated randomly during setup, not written down anywhere else). Each endpoint returns `401` if the header
+is missing or wrong, and `200 {"ok":true}` on success — a quick way to confirm a job is configured correctly
+before waiting for its first scheduled run.
 
 ## How to run this locally
 

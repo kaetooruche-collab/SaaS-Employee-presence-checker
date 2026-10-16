@@ -11,6 +11,16 @@
   setup and an approved Authentication-category template — not something buildable from here.
 - Added Prisma `directUrl` for a future pooled Postgres connection (e.g. Neon).
 - `/app/NOTES.md` updated with Vercel deployment steps and what env vars/accounts are still needed.
+- Decision D10: first deploy attempt was rejected outright (`cron_jobs_limits_reached` — Hobby plan only
+  allows daily Cron Jobs). Founder chose an external cron pinger (cron-job.org, confirmed to support custom
+  headers free) over upgrading to Pro or loosening the staleness design. `vercel.json` now only schedules
+  the daily history-purge job through Vercel itself.
+- Created and deployed the Vercel project (`presence-app` under `kayz3`, linked to this repo/branch).
+  Production build succeeded; adjusted Vercel Authentication so the production URL is publicly reachable
+  (previews stay gated). Set `SESSION_SECRET`/`CRON_SECRET`/`OTP_CHANNEL` as real project env vars. Confirmed
+  via Vercel's runtime-error tooling that the current 500 on every route is exactly the expected
+  missing-database issue, not a deploy/routing problem — a real Postgres instance and the cron-job.org setup
+  are the two things standing between this and an actually usable deployment.
 
 ## 2026-10-16 — v0.5 (MVP built and verified)
 

@@ -224,6 +224,17 @@ still exist and still check `CRON_SECRET` the same way — only the thing callin
 actual cron-job.org account/jobs is the founder's action (an external account this session has no authority
 to create), documented step-by-step in `/app/NOTES.md`.
 
+**Deployment result, verified directly, not assumed:** the retry succeeded — build `READY`, live at
+`https://presence-app-kayz3.vercel.app`. Also adjusted the project's Vercel Authentication (SSO Protection)
+setting from its default (`all_except_custom_domains`, which would have required every visitor to be logged
+into this Vercel team) to `preview`-only, so the production URL is reachable by the coworkers this is meant
+to be pitched to, not just the team. Fetched `/login` via Vercel's own fetch tool afterward and got a 500
+`FUNCTION_INVOCATION_FAILED` — checked runtime logs/errors to confirm this isn't a new problem: no
+`DATABASE_URL` is set yet (deliberately, per the billing/account-ownership reasoning above), and every
+route touches the database through `attachEmployee`. This confirms the deployment infrastructure itself
+(build, routing, the Express app) works; the only blocker is the already-documented missing database and
+WhatsApp credentials, both still the founder's to provision.
+
 ## Pending decisions (not yet made, need human input)
 
 - Whether to proceed to Gate 1 research (interviews, primary legal sources, TRNC business-count research)
