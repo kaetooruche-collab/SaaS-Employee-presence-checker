@@ -5,6 +5,7 @@
   "description": "Workplace presence MVP — see /docs in the repo root for the product definition and schema this implements.",
   "main": "dist/server.js",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.check.json",
