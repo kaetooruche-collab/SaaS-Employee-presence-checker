@@ -22,10 +22,20 @@ export const consoleOtpSender: OtpSender = {
 // account): create a Meta Business Manager account, add a WhatsApp
 // product, get a phone number ID, get an access token (a System User
 // token for production, not the 24h test token), and submit an
-// authentication-category template for approval (Meta's template review
-// is usually fast for this category, but it is still external review you
-// have to wait on). Once approved, set WHATSAPP_ACCESS_TOKEN,
-// WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_OTP_TEMPLATE_NAME.
+// authentication-category template for approval. Once approved, set
+// WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and
+// WHATSAPP_OTP_TEMPLATE_NAME.
+//
+// Assumes the template uses a "Copy Code" button (otp_type COPY_CODE),
+// not one-tap autofill or zero-tap — those need an Android app with a
+// registered package name/signature hash, which doesn't apply to a
+// web-only login flow. With a Copy Code button, the send payload needs
+// TWO components carrying the same code: the body text substitution
+// AND a "button" component (sub_type "copy_code") that tells WhatsApp
+// what to put on the user's clipboard when they tap the button. Sending
+// only the body component (an earlier version of this file did) fails
+// against a real Copy-Code template — confirmed against Meta's own
+// authentication-template send documentation before writing this.
 export const whatsAppOtpSender: OtpSender = {
   async send(phoneNumber, code) {
     const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
@@ -53,7 +63,15 @@ export const whatsAppOtpSender: OtpSender = {
         template: {
           name: templateName,
           language: { code: templateLang },
-          components: [{ type: "body", parameters: [{ type: "text", text: code }] }],
+          components: [
+            { type: "body", parameters: [{ type: "text", text: code }] },
+            {
+              type: "button",
+              sub_type: "copy_code",
+              index: 0,
+              parameters: [{ type: "coupon_code", coupon_code: code }],
+            },
+          ],
         },
       }),
     });
